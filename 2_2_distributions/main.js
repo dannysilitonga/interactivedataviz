@@ -45,12 +45,19 @@ d3.json('../data/environmentRatings.json', d3.autoType).then(data => {
     const dot = svg
       .selectAll("circle")
       .data(data, d => d.BioID) 
-      .join("circle")
+      .join(
+        enter => enter
+          .append("circle")
+          .attr("r", 1)
       .attr("cx", d => xScale(d.envScore2020))
       .attr("cy", d => yScale(d.ideologyScore2020))
       .attr("r", radius)
-      .attr("fill", d => colorScale(d.Party))
-    console.log("the code gets to the")
-    
+      .attr("fill", "black")
+        .transition()
+        .duration(4000) // in ms
+        .delay(200)
+          .attr("r", 10)
+          .attr("fill", d=> colorScale(d.Party))
+      )
 
-  })
+  });
