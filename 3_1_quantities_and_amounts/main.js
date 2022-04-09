@@ -1,7 +1,7 @@
 /* CONSTANTS AND GLOBALS */
 
 const margin = {top: 20, right:30, bottom:40, left:180},
-  width = window.innerHeight*0.9 - margin.left - margin.right,
+  width = window.innerWidth*0.9 - margin.left - margin.right,
   height = window.innerHeight*0.9 - margin.top - margin.bottom;
 
 
@@ -91,24 +91,27 @@ function init() {
   const xScale = d3.scaleLinear()
       .domain([0, d3.max(state.data, d=> d.count)])   //data.map(d=> d.activity))
       .range([0, width]); //visual variable
-      //.ticks(14); 
+      //.ticks(5); 
 
   svg.append("g")
       .attr("transform", "translate(0, " + height + ")")
-      .call(d3.axisBottom(xScale).ticks(14))
+      .call(d3.axisBottom(xScale).ticks(5))
       .selectAll("text")
-      .attr("transform", "translate(0,0)rotate(-45)")
-      .style("text-anchor", "end");
+      .attr("transform", "translate(0,0)rotate(0)")
+      .style("text-anchor", "end")
+      .style("color","#708090");
 
     //yscale - linear, count
   const yScale = d3.scaleBand()
       .domain(state.data.map(d=> d.agency))
       .range([0, height])
-      .paddingInner(0.1);
+      .paddingInner(0.15);
 
   svg.append("g")
       .call(d3.axisLeft(yScale))
-      .style("font-size",8);
+      .style("font-size",10)
+      .style("color","#708090")
+      .attr("font-family", "Source Sans Pro");
     
 
   svg.selectAll("rect")
