@@ -61,7 +61,7 @@ d3.json(url).then(raw_data => {
   let countJobs = []; 
 
   for (i in jobsByAgency){
-    countJobs.push(i.length)
+    countJobs.push(jobsByAgency[i].length)
   }
   
   let agencies = Object.keys(jobsByAgency)
@@ -95,7 +95,7 @@ function init() {
 
   svg.append("g")
       .attr("transform", "translate(0, " + height + ")")
-      .call(d3.axisBottom(xScale).ticks(5))
+      .call(d3.axisBottom(xScale).ticks(10))
       .selectAll("text")
       .attr("transform", "translate(0,0)rotate(0)")
       .style("text-anchor", "end")
@@ -119,9 +119,23 @@ function init() {
       .join("rect")
       .attr("x", xScale(0))
       .attr("y", function(d) { return yScale(d.agency); })
-      .attr("width", function(d) { return xScale(d.count); }) //)
       .attr("height",  yScale.bandwidth() ) // d=> height - yScale(d.count))
       .attr("fill", "#69b3a2")
+      .transition()
+      .duration(1000)
+      .attr("width", "0")
+      .transition()
+      .duration(1500)
+      .attr("width", "1600")
+      .transition(1500)   
+      .attr("width", function(d) { return xScale(d.count); }) //)
+      
+      //.transition()
+      //.duration(2000)
+      //.attr("width", "400")
+      //.transition()
+      //.duration(2000)
+      //.attr("width", function(d) { return xScale(d.count); })
       //.attr("x", d=>xScale(d.activity))
       //.attr("y", d=>yScale(d.count))
     /** Select your container and append the visual elements to it */
