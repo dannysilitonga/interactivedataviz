@@ -58,11 +58,25 @@ d3.json(url).then(raw_data => {
   
   jobsByAgency = groupBy(raw_data, 'agency')
   
-  let countJobs = []; 
+  let countJobs = [];
+  let count = 0; 
 
-  for (i in jobsByAgency){
-    countJobs.push(jobsByAgency[i].length)
-  }
+  //for (i in jobsByAgency){
+  //  countJobs.push(jobsByAgency[i].length)
+  //}
+
+  salaryMin = 75000  
+  for(j in jobsByAgency){
+    for(var i =0; i<jobsByAgency[j].length; i++){
+        if(parseInt(jobsByAgency[j][i]['salary_range_to']) > salaryMin){
+            count ++;            
+        }
+    }
+    countJobs.push(count)
+    //console.log(count)
+    //countAll = {jobsByAgency[j]: count}
+    count = 0    
+}
   
   let agencies = Object.keys(jobsByAgency)
   jobOpenings = combineArray(agencies,countJobs)
