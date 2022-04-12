@@ -69,7 +69,7 @@ tooltip = d3.select("body")
   .attr("fill", "#69b3a2")
   .text("tooltip");
 
-const salaryMin = 75000;
+const salaryMin = 125000;
 
 
 /* LOAD DATA */
@@ -140,7 +140,7 @@ function init() {
       .attr("x", width / 2 )
       .attr("y",  height + margin.bottom-5)
       .style("text-anchor", "middle")
-      .text("Number of Job Postings Paying at least $75,000")
+      .text("Number of Job Postings Paying at least $125,000")
       .style("color","#708090")
       .attr("font-family", "Source Sans Pro")
       .style("font-size",12);
