@@ -4,14 +4,14 @@ const margin = {top: 20, right:30, bottom:40, left:180},
   width = window.innerWidth*0.9 - margin.left - margin.right,
   height = window.innerHeight*0.9 - margin.top - margin.bottom;
 
-
-
 // // since we use our scales in multiple functions, they need global scope
 let xScale, yScale;
 
 /* APPLICATION STATE */
 let state = {
   data: [],
+  // hover: null
+  selection: "all"
 };
 
 let jobsByAgency = []
@@ -43,13 +43,33 @@ const combineArray = (agency = [], count = []) => {
   return results;
 };
 
-const svg = d3.select("#container")
+const container = d3.select("#container")
+  .style("position", "relative");
+
+
+const svg = container
 .append("svg")
   .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-.append("g")
+  .attr("height", height + margin.top + margin.bottom)  
+  .style("position", "relative")
+  .append("g")
   .attr("transform",
-        "translate(" + margin.left + "," + margin.top + ")");
+        "translate(" + margin.left + "," + margin.top + ")")
+  ;
+
+tooltip = d3.select("body")
+  .append("div") 
+  .attr("Class", "tooltip")
+  .style("z-index", "10")
+  .style("position", "absolute")
+  .style("visibility", "hidden")
+  .style("opacity", 0.8)
+  .style("padding", "2px")
+  .style("font-size",'12px')
+  .attr("fill", "#69b3a2")
+  .text("tooltip");
+
+const salaryMin = 75000;
 
 
 /* LOAD DATA */
@@ -65,7 +85,7 @@ d3.json(url).then(raw_data => {
   //  countJobs.push(jobsByAgency[i].length)
   //}
 
-  salaryMin = 75000  
+  
   for(j in jobsByAgency){
     for(var i =0; i<jobsByAgency[j].length; i++){
         if(parseInt(jobsByAgency[j][i]['salary_range_to']) > salaryMin){
@@ -103,7 +123,7 @@ function init() {
   /* SCALES */
   // xscale - categorical, activity
   const xScale = d3.scaleLinear()
-      .domain([0, d3.max(state.data, d=> d.count)])   //data.map(d=> d.activity))
+      .domain([0, d3.max(state.data, d=> d.count+10)])   //data.map(d=> d.activity))
       .range([0, width]); //visual variable
       //.ticks(5); 
 
@@ -113,13 +133,23 @@ function init() {
       .selectAll("text")
       .attr("transform", "translate(0,0)rotate(0)")
       .style("text-anchor", "end")
-      .style("color","#708090");
+      .style("color","#708090")
+      .attr("font-family", "Source Sans Pro");
+
+  svg.append("text")
+      .attr("x", width / 2 )
+      .attr("y",  height + margin.bottom-5)
+      .style("text-anchor", "middle")
+      .text("Number of Job Postings Paying at least $75,000")
+      .style("color","#708090")
+      .attr("font-family", "Source Sans Pro")
+      .style("font-size",12);
 
     //yscale - linear, count
   const yScale = d3.scaleBand()
       .domain(state.data.map(d=> d.agency))
       .range([0, height])
-      .paddingInner(0.15);
+      .paddingInner(0.2);
 
   svg.append("g")
       .call(d3.axisLeft(yScale))
@@ -128,83 +158,48 @@ function init() {
       .attr("font-family", "Source Sans Pro");
     
 
-  svg.selectAll("rect")
+  var dots = svg.selectAll("rect")
       .data(state.data)
       .join("rect")
       .attr("x", xScale(0))
       .attr("y", function(d) { return yScale(d.agency); })
       .attr("height",  yScale.bandwidth() ) // d=> height - yScale(d.count))
-      .attr("fill", "#69b3a2")
-      .transition()
+      .attr("fill", "#69b3a2");
+     
+     
+  dots.transition()
       .duration(1000)
       .attr("width", "0")
       .transition()
       .duration(1500)
       .attr("width", "1600")
       .transition(1500)   
-      .attr("width", function(d) { return xScale(d.count); }) //)
+      .attr("width", function(d) { return xScale(d.count); }); //)
       
-      //.transition()
-      //.duration(2000)
-      //.attr("width", "400")
-      //.transition()
-      //.duration(2000)
-      //.attr("width", function(d) { return xScale(d.count); })
-      //.attr("x", d=>xScale(d.activity))
-      //.attr("y", d=>yScale(d.count))
-    /** Select your container and append the visual elements to it */
+  dots.on("mouseover", function(event,d,i) {
+          tooltip
+            .html(`<div>Number of Job postings: ${d.count}</div>`)
+            .style("visibility", "visible")
+            .style("opacity", .8)
+            
+            
+            .style("background", "#FFDEAD")
+        })
+        .on("mousemove", function (event) { 
+          tooltip
+            .style("top", event.pageY - 10 + "px")
+            .style("left", event.pageX + 10 + "px");
+        })
+        .on("mouseout", function(event, d){
+          tooltip
+            .html(``)
+            .style("visibility", "hidden");
+        })      
 
-  }    
+}
 
- 
-  //xScale = d3.scaleBand()
-  //  .domain(state.data.map(d=> d.agency))
-  //  .range([0, width]) // visual variable
-  //  .paddingInner(.2)
-
-  //yscale - linear, count
-//  yScale = d3.scaleLinear()
- //   .domain([20, d3.max(state.data, d=> d.count)])
- //   .range([height, 0])
-
-
-//  draw(); // calls the draw function
-//}
-
-/* DRAW FUNCTION */
-// we call this every time there is an update to the data/state
-// function draw() {
-//   /* HTML ELEMENTS */
-//   //svg
-//   const svg = d3.select("#container")
-//     .append("svg")
-//     .attr("width", width + margin.left + margin.right)
-//     .attr("height", height + margin.top + margin.bottom)
-//     .append("g")
-//     .attr("transform",
-//         "translate(" + margin.left + "," + margin.top + ")");
-
-//   // axis scales
-//   const xAxis = d3.axisBottom(xScale)
-//     svg.append("g")
-//     .attr("transform", `translate(0, ${height})`)
-//     .call(xAxis)
-//     .selectAll("text")
-//     .attr("transform", "translate(0,0)rotate(0)")
-//     .style("font-size",8);
-
-//   const yAxis = d3.axisLeft(yScale).ticks(5)
-//   svg.append("g")
-//     .attr("transform", `translate(${margin.left - 100}, 0)`)
-//     .call(yAxis);
-  
-//     // bars
-//     svg.selectAll("rect")
-//       .data(state.data)
-//       .join("rect")
-//       .attr("width", xScale.bandwidth())
-//       .attr("height", d=> height - yScale(d.count))
-//       .attr("x", d=>xScale(d.agency))
-//       .attr("y", d=>yScale(d.count))
-//       .attr("fill", "#69b3a2")
-// }
+function draw() {
+   /* HTML ELEMENTS */
+  // svg
+}
+     
