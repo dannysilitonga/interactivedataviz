@@ -178,7 +178,7 @@ function init() {
       
   dots.on("mouseover", function(event,d,i) {
           tooltip
-            .html(`<div>Number of Job postings: ${d.count}</div>`)
+            .html(`<div>Number of Job Postings: ${d.count}</div>`)
             .style("visibility", "visible")
             .style("opacity", .8)
             
