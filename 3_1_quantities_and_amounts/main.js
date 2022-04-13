@@ -50,7 +50,6 @@ const combineArray = (agency = [], count = []) => {
 const container = d3.select("#container")
   .style("position", "relative");
 
-
 const svg = container
 .append("svg")
   .attr("width", width + margin.left + margin.right)
@@ -72,8 +71,6 @@ tooltip = d3.select("body")
   .style("font-size",'12px')
   .attr("fill", "#69b3a2")
   .text("tooltip");
-
-
 
 /* LOAD DATA */
 d3.json(url).then(raw_data => {
