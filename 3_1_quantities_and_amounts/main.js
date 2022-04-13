@@ -6,19 +6,23 @@ const margin = {top: 20, right:30, bottom:40, left:180},
 
 // // since we use our scales in multiple functions, they need global scope
 let xScale, yScale;
-
 /* APPLICATION STATE */
 let state = {
   data: [],
   // hover: null
   selection: "all"
 };
+let jobsByAgency = [];
+let jobOpenings = [];
+let countJobs = [];
+const raw_data_output = {
+  data: []
+};
+let subsetData = [];
+const salaryMin = 125000;
+const uniqueIds = [];
 
-let jobsByAgency = []
-
-let jobOpenings = []
-
-url = "https://data.cityofnewyork.us/resource/kpav-sd4t.json"
+url = "https://data.cityofnewyork.us/resource/kpav-sd4t.json?$limit=5000"
 
 const groupBy = (array, key) => {
   //return the end result
@@ -33,14 +37,14 @@ const groupBy = (array, key) => {
 };
 
 const combineArray = (agency = [], count = []) => {
-  let results = [];
+  let newData = [];
   for (let i =0; i < agency.length; i++){
-    results.push({
+    newData.push({
       agency: agency[i],
       count: count[i]
     });
   }
-  return results;
+  return newData;
 };
 
 const container = d3.select("#container")
@@ -69,51 +73,51 @@ tooltip = d3.select("body")
   .attr("fill", "#69b3a2")
   .text("tooltip");
 
-const salaryMin = 125000;
 
 
 /* LOAD DATA */
 d3.json(url).then(raw_data => {
   console.log("data", raw_data);
-  
-  jobsByAgency = groupBy(raw_data, 'agency')
-  
-  let countJobs = [];
-  let count = 0; 
+  console.log(raw_data.length)
 
-  //for (i in jobsByAgency){
-  //  countJobs.push(jobsByAgency[i].length)
-  //}
-
+  // save raw data for debugging and other purposes
+  raw_data_output.data = raw_data
   
+  //remove duplicate data
+  subsetData = Array.from(new Set(raw_data_output.data.map( o => JSON.stringify(o))), s => JSON.parse(s));
+  console.log(subsetData)
+  console.log(subsetData.length)
+
+  //group the data by city agency
+  jobsByAgency = groupBy(subsetData, 'agency')
+
+  // filter data to include salary requirement and remove duplicates, external and internal
+  // count the number of jobs 
+  let count = 0;  
   for(j in jobsByAgency){
     for(var i =0; i<jobsByAgency[j].length; i++){
-        if(parseInt(jobsByAgency[j][i]['salary_range_to']) > salaryMin){
-            count ++;            
+        if((parseInt(jobsByAgency[j][i]['salary_range_to']) > salaryMin) &&
+          (jobsByAgency[j][i]['posting_type'] == "External")) {
+            count = count + parseInt(jobsByAgency[j][i]['number_of_positions'])
         }
     }
     countJobs.push(count)
-    //console.log(count)
-    //countAll = {jobsByAgency[j]: count}
-    count = 0    
+    //reset count to zero
+    count = 0;
+    //countUpdated = 0;    
 }
   
+ // create array of city agencies  
   let agencies = Object.keys(jobsByAgency)
+  // combine the count of jobs 
   jobOpenings = combineArray(agencies,countJobs)
   jobOpenings = jobOpenings.sort((a,b) => (a.count < b.count) ? 1: -1)
 
-  const startIndex = 0;
-  const endIndex = 55;
-  jobOpeningsSubset = jobOpenings.slice([startIndex], [endIndex])
-
+  
   // save our data to application state
-  state.data = jobOpeningsSubset
+  state.data = jobOpenings
 
   
-  console.log(state.data);
-
-  
-
   init();
 });
 
@@ -123,7 +127,7 @@ function init() {
   /* SCALES */
   // xscale - categorical, activity
   const xScale = d3.scaleLinear()
-      .domain([0, d3.max(state.data, d=> d.count+10)])   //data.map(d=> d.activity))
+      .domain([0, d3.max(state.data, d=> d.count+5)])   //data.map(d=> d.activity))
       .range([0, width]); //visual variable
       //.ticks(5); 
 
